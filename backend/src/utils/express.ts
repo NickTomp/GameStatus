@@ -1,0 +1,5 @@
+import { Request } from "express";
+
+export const getParam = (param: string | string[]) => {
+  return Array.isArray(param) ? param[0] : param;
+};

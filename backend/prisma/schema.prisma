@@ -6,3 +6,93 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// =========================
+// ENUMS
+// =========================
+
+enum GameStatus {
+  wishlist
+  playing
+  completed
+  abandoned
+}
+
+enum GameCategory {
+  masterpiece
+  good
+  normal
+  other
+}
+
+// =========================
+// USER
+// =========================
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+
+  username     String?
+  tag          String   @unique
+  bio          String?
+  avatarUrl    String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  games        Game[]
+}
+
+// =========================
+// GAME (CORE ENTITY)
+// =========================
+
+model Game {
+  id              String       @id @default(uuid())
+
+  ownerId         String
+  owner           User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // --- CORE FIELDS (always required)
+  title           String
+  series          String
+  posterUrl       String
+  description     String
+  genre           String
+  releaseDate     DateTime?
+
+  // --- STATUS SYSTEM
+  status          GameStatus   @default(wishlist)
+  category        GameCategory?
+
+  // --- USER RELATION DATA
+  personalRating  Int?         // 1–10
+  pros            String?
+  cons            String?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // --- RELATIONS
+  playthroughs    Playthrough[]
+}
+
+// =========================
+// PLAYTHROUGH
+// =========================
+
+model Playthrough {
+  id          String   @id @default(uuid())
+
+  gameId      String
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  playedAt    DateTime
+  hoursSpent  Int
+  review      String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
